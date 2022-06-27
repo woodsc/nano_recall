@@ -1,0 +1,13 @@
+testdata
+output-interesting
+save
+deploy
+config/settings.txt
+lib/alignment/build/alignment_ext-0.0.0.gem
+web/node_modules
+web/*.log
+web/*.lock
+web/public/*
+web/config/*keys*
+web/*.db
+web/work
