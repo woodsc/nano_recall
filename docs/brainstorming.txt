@@ -1,0 +1,64 @@
+Nanopore HIV Brainstorming.
+
+What will we need.
+
+Web-Platform
+- Sinatra, Vue (or React), webpack, etc.
+- nginx for something I can't quite remember.
+- Mysql as a database so we can have better parallel processing?
+  - OR we can use sqlite3 IF all of our database operations are minimal.  Hmm.
+- https://purecss.io/ maybe?
+
+
+The Goal of the processing is a nice little commandline tool.
+
+The goal of the Web-Platform is to have a nice queue of processing with proper
+estimates and job queue # in a nice interactive way.
+
+
+Not sure how the fast5 files are set organized, they seem like a bunch of copies but of different sizes.
+https://ubcca-my.sharepoint.com/:f:/g/personal/richard_harrigan_ubc_ca/EucGhjn-kWBPrE6Xstf0TaABqNwX6WpBG6c-rr8gMYH8eA?email=email%40woodsc.ca&e=5%3anYtzLy&at=9
+https://ubcca-my.sharepoint.com/:f:/g/personal/richard_harrigan_ubc_ca/EsoA9GQky95Jks2sgfQiM8gB2TBSyV7oBjxiT7o-pP9bAg?email=email%40woodsc.ca&e=5%3a3SlJ3y&at=9
+
+
+
+Future TODO:
+- Speed optimizations
+  - Ruby can't do parallel processing, its a shame.
+  - We probably could spawn new processes with the sole purpose of doing blocks of
+    alignments.  The main program could coordinate them and keep everything in order.
+  - We'd need to define the N spawned processes and JOBSIZE in our settings file.
+  - Use just a single clade sequence per subtype.  We could probably use a mixturized sequence.
+    - Done (Original:  6m26.998s)   (Optimization:  2m47.180s)
+    - Need to see if the results have changed significantly. TODO
+- Sequence improvement
+  - Slightly longer reference sequences would help with alignment, particularly integrase.
+  - According to a paper, nanopore errors are often caused by
+    - Homopolymers (somewhat easy to fix)
+    - Low complexity Regions (low nucleotide diversity, like homopolymers or ATATATA)
+  - Quality values seem useless.
+  - Possibly use '?' nucleotides to mark bits as garbage.  Good for single base deletions.
+- Need to properly handle GOOD insertions and GOOD deletions.
+- Figure out how you are going to do the command line.
+- Set up the job status file.
+
+
+
+Next steps:
+- If a job file is "in progress" and hasn't been written to in over 5 mins, it should be failed.
+  - Web server will do this.
+- Sanitization for web server*
+- Also need to be careful with the input file as they might try to add bash commands to it.
+  - Probably can solve by saving file with a job id or something.
+- Web side we need to figure out how timestamps/dates work.
+- Alignment fixes.
+  - I think whereever there is a deletion/insertion, we should try our align to most common sequence strategry.
+  - Also, we should probably align to multiple sequences if there are common "clean" subsequences.
+    - Important to not include Insertion sequences in the "Clean" list.
+- Figure out what pages there should be.  (contact, about, docs?)
+  - Home
+  - Documentation
+  - Contact
+  - Account
+  - Password Reset
+  - Admin (???)

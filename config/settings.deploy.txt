@@ -1,0 +1,32 @@
+#This is the main configuration file.  It contains thresholds, optimizations
+#and more.
+
+#debug
+debug=false
+debug-genes=pr,rt,int
+debug-seq-limit=99999999
+
+#output options
+output-filter-direction=true
+
+#alignment and threshold variables.
+mix-threshold=0.25
+align-gap-init=3
+align-gap-extend=1
+reference-match-threshold=0.70
+trim-edges-dash-threshold=0.20
+
+#Sequence improvement
+trim-gene-edges=false
+alignment-optimize=true
+alignment-optimize-pad-size=6
+
+
+#optimizations
+optimization-stop-poor-alignments=true
+optimization-stop-poor-alignments-threshold=0.10
+optimization-clipped-alignment=true
+optimization-clipped-alignment-buffer=60
+optimization-coverage-limit=true
+optimization-coverage-limit-target=500
+optimization-mixturize-subtypes=true

@@ -1,0 +1,12 @@
+
+Licence:
+Nano_recall is provided for research purposes only, and is free to use or modify
+as you like for your own use if you are an academic or non-profit.  If you are a
+for-profit entity, please contact:
+
+University-Industry Liaison Office
+Technology Enterprise Facility III
+#103 - 6190 Agronomy Road, Vancouver, BC
+V6T 1Z3
+Tel: (604) 822-8580
+Fax: (604) 822-8589
