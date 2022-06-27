@@ -175,6 +175,7 @@ def job_complete(job, report)
 
   #update report
   job_update_report(job, report)
+
 end
 
 def job_error(job, error)
@@ -189,19 +190,5 @@ def job_save(job)
     File.open(job[:file], 'w') do |file|
       file.puts job.to_json()
     end
-  end
-end
-
-
-def job_zip(job, path)
-  begin
-    FileUtils.rm("#{path}.zip")
-  rescue
-  end
-  
-  if(job[:file])
-    system("zip -j #{path}.zip #{path}\.*  #{job[:file]}")
-  else
-    system("zip -j #{path}.zip #{path}\.*")
   end
 end

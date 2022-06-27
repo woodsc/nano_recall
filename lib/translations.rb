@@ -41,8 +41,7 @@ NUC_MIX = {
   'H' => ['A', 'C', 'T'].sort,
   'V' => ['A', 'C', 'G'].sort,
   'N' => ['A', 'C', 'T', 'G'].sort,
-  'X' => ['X'],
-  '-' => ['-']
+  'X' => ['X']
 }
 NUC_MIX.default = ['X']
 
@@ -80,8 +79,4 @@ def qual_to_string(qual_array)
     end
   end
   return str
-end
-
-def match_nuc(a,b)
-  return NUC_MIX[a].include?(b) || NUC_MIX[b].include?(a)
 end

@@ -124,10 +124,7 @@ class MutationFreq
   end
 
   def MutationFreq.get_aa_frequencies(alignments: , trim_range: )
-    return [] if(alignments.size() == 0)
-
     freq = []
-
     0.upto((alignments[0].seq_clean()[trim_range].size() / 3) - 1) do |i|
       freq[i] = {}
       freq[i].default = 0
@@ -139,9 +136,8 @@ class MutationFreq
       0.upto((seq.size() / 3).to_i - 1) do |i|
         aa = nuc_to_aa(seq[i * 3, 3])
         aa_seq += (aa.nil? ? '?' : aa)
-        freq[i][(aa.nil? ? '?' : aa)] += 1 if(freq[i])
+        freq[i][(aa.nil? ? '?' : aa)] += 1
       end
-
     end
     return freq
   end

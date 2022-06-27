@@ -18,7 +18,7 @@ require './lib/optional/gene_edges'
 require './lib/optional/homopolymer_fixes'
 require './lib/optional/alignment_optimize'
 require './lib/optional/optimization_coverage_limit'
-require './lib/optional/reject_poor_aligned_ends'
+require './lib/optional/trim_bad_ends'
 
 options = {}
 OptionParser.new do |opts|
@@ -42,10 +42,6 @@ OptionParser.new do |opts|
   end
   opts.on("-o", "--output FILE", "Output file") do |v|
     options[:output] = v
-    #check that it is valid output file?
-  end
-  opts.on("-z", "--zip", "Zip output files") do |v|
-    options[:zip] = v
     #check that it is valid output file?
   end
   opts.on("--batch-output", "--batch-output FOLDER", "Output folder") do |v|
@@ -236,17 +232,15 @@ begin
             if(match_perc < 0.10)
               alignment = Alignment.new()
               alignment.align(std: ref_standard, seq: sequence.reverse_complement())
-              #puts "Bad alignment [#{sample_gene.name}] (#{match_perc}), r_complement: #{alignment.match_perc()}."
+              new_perc = alignment.match_perc()
+  #            puts "Bad alignment [#{sample_gene.name}] (#{match_perc}), r_complement: #{new_perc}."
               match_perc = alignment.match_perc()
             end
+
 
             if(match_perc < Settings['optimization-stop-poor-alignments-threshold'] and
               Settings['optimization-stop-poor-alignments'])
               break #quick exit, as this doesn't align at all.
-            #elsif(match_perc_parts < 0.45)
-            #  puts "Poor partial match #{match_perc} #{match_perc_parts}"
-            #  puts alignment.details()
-            #  break
             elsif(match_perc > Settings['reference-match-threshold'])
               if(Settings['optimization-clipped-alignment'] and seq_clipped == nil)
                 #I guess its fine because indels are preserved and the alignment would get rid of dashes anyway...
@@ -257,19 +251,13 @@ begin
                 seq_clipped.nucleotides = alignment.seq.nucleotides[trim_start .. trim_end]
               end
 
-              #TODO, get rid of
-              #puts "clade #{clade} match_perc #{match_perc} #{alignment.match_perc_parts(60)}"
-
               alignments << { ref_standard: ref_standard,
                 clade: clade,
                 alignment: alignment,
                 match_perc: match_perc,
                 hxb2_standard: hxb2_standard}
-            else
-              #puts "Bad I guess?  #{match_perc}"
             end
-
-          end #end gene_stds.each
+          end
 
           #pick best alignment
           best_alignment = alignments.sort(){|a,b| b[:match_perc] <=> a[:match_perc]}.first()
@@ -309,57 +297,10 @@ begin
 
             #alignment post processing here----------------------?
 
-            #extract out to its own module?
-            if(Settings['reject-poor-aligned-ends'])
-              good = reject_poor_aligned_ends(alignment: final_alignment)
+
+            if(Settings['trim-bad-ends'])
+              good = trim_bad_ends(alignment: final_alignment)
               next if(!good) #skip poor alignments
-            end
-
-            #NEWish, shortens suspicious dual-homopolymers.
-            if(true)
-              #Attempts to shorten suspicious dual-homopolymers, EG  AAAAGGGG
-              homopolymers = []
-              st = -1
-              hnuc = ''
-
-              #First, find all the homopolymer
-              final_alignment.trim_start.upto(final_alignment.trim_end) do |i|
-                nuc = final_alignment.seq.nucleotides[i]
-                if(st == -1)
-                  st = i
-                  hnuc = nuc
-                elsif(hnuc != nuc) #end homopolyer
-                  if(i - st >= 3 and hnuc != '-')
-                    homopolymers << [st, (i - st), final_alignment.seq.nucleotides[st, (i - st)]]
-                  end
-                  st = i
-                  hnuc = nuc
-                end
-              end
-
-              #Find two in a row, where the standard sequence is altered one way or another.  EG:
-              #AAAGGGG
-              #AAAAGGG
-              #Would end up censoring as AAA-GGG
-              #Its a bit complex though, so be careful.
-              prev_hp = nil
-              homopolymers.each do |hp|
-                if(prev_hp == nil)
-                  prev_hp = hp
-                elsif(prev_hp[0] + prev_hp[1] == hp[0] and hp[01] + prev_hp[1] >= 7)
-                  if(final_alignment.std.nucleotides[hp[0]] == prev_hp[2][0] and hp[1] > 3)
-                    final_alignment.seq.nucleotides[hp[0]] = '-'
-                    #tmp_seq = final_alignment.seq.nucleotides[prev_hp[0]-3, prev_hp[1] + hp[1]+6]
-                    #puts "A:  Should be:  #{tmp_seq}" if(final_alignment.seq.id == '3b8785b1-5816-4bbb-8b45-9d4a89dd4f39')
-                  elsif(final_alignment.std.nucleotides[hp[0] - 1] == hp[2][0] and prev_hp[1] > 3)
-                    final_alignment.seq.nucleotides[hp[0] - 1] = '-'
-                    #tmp_seq = final_alignment.seq.nucleotides[prev_hp[0]-3, prev_hp[1] + hp[1]+6]
-                    #puts "B:  Should be:  #{tmp_seq}" if(final_alignment.seq.id == '3b8785b1-5816-4bbb-8b45-9d4a89dd4f39')
-                  end
-                end
-                prev_hp = hp
-              end
-
             end
 
             if(Settings['optimization-coverage-limit'])
@@ -550,6 +491,7 @@ begin
         fastasave_rev << ['HXB2', gene.hxb2_standard.nucleotides]
 
         gene_alignments.each do |alignment|
+
           fastasave << [alignment.seq.id, alignment.seq_clean[gene.trim_range]]
           if(alignment.rev_comp)
             fastasave_rev << [alignment.seq.id, alignment.seq_clean[gene.trim_range]]
@@ -604,15 +546,11 @@ begin
       job_update(fastq.data.size() - 1, job, sample, true) #force final update
       job_complete(job, report)  #add final report
       job_save(job)
-      job_zip(job, batch[:output]) if(options[:zip])
-
       puts "Processing successful."
     else #failure_state==true
       #save error information
       job_error(job, errors.join("\n"))
       job_save(job)
-      job_zip(job, batch[:output]) if(options[:zip])
-
       puts "Processing failed:"
       puts errors
     end

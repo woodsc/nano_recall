@@ -4,7 +4,7 @@ require "#{File.dirname(__FILE__)}/alignment/_alignment"
 require "#{File.dirname(__FILE__)}/settings.rb"
 
 class Alignment
-  attr_accessor :seq, :std, :insertions, :deletions, :trim_start, :trim_end, :rev_comp, :censors
+  attr_accessor :seq, :std, :insertions, :deletions, :trim_start, :trim_end, :rev_comp
   attr_accessor :cache_seq_clean #set to nil to reset cache
 
   def initialize()
@@ -16,7 +16,6 @@ class Alignment
     @trim_end = nil   #index of sequence end (last nucleotide)
     @cache_seq_clean = nil
     @rev_comp = false
-    @censors = []  #collection of ranges to censor  (based on raw alignment)
   end
 
   #aligns and stores the alignment
@@ -81,15 +80,7 @@ class Alignment
   #returns a sequence trimmed && insertions removed.
   def seq_clean(recalc=false)
     if(recalc or @cache_seq_clean.nil?)
-      str = @seq.nucleotides + ''
-      #apply censors
-      @censors.each do |rng|
-        rng.each do |i|
-          str[i] = '-'
-        end
-      end
-
-      str = str[0 .. @trim_end]
+      str = @seq.nucleotides[0 .. @trim_end]
 
       @insertions.reverse.each do |ins|
         next if(ins.first >= str.size())
@@ -207,22 +198,21 @@ class Alignment
     0.upto(minsize - 1) do |i|
       if(@std.nucleotides[i] == '-')
         gaps += 1
-      #elsif(@std.nucleotides[i] == @seq.nucleotides[i])
-      elsif(match_nuc(@std.nucleotides[i], @seq.nucleotides[i]))
+      elsif(@std.nucleotides[i] == @seq.nucleotides[i])
         matches += 1
       end
     end
     return matches.to_f / (minsize - gaps).to_f
   end
 
-  def match_perc_gaps_okay() #unused?
+  def match_perc_gaps_okay()
     matches = 0
     minsize = [@std.nucleotides.size(), @seq.nucleotides.size()].min()
     gaps = 0
     0.upto(minsize - 1) do |i|
       if(@std.nucleotides[i] == '-' or @seq.nucleotides[i] == '-')
         gaps += 1
-      elsif(match_nuc(@std.nucleotides[i], @seq.nucleotides[i]))
+      elsif(@std.nucleotides[i] == @seq.nucleotides[i])
         matches += 1
       end
     end

@@ -63,12 +63,11 @@ class Sequence
     return str
   end
 
-  def compare_match_cnt(seq) #unused?
+  def compare_match_cnt(seq)
     matches = 0
     minsize = [@nucleotides.size(), seq.nucleotides.size()].min()
     0.upto(minsize - 1) do |i|
-      #if(@nucleotides[i] == seq.nucleotides[i])
-      if(match_nuc(@nucleotides[i], seq.nucleotides[i]))
+      if(@nucleotides[i] == seq.nucleotides[i])
         matches += 1
       end
     end
@@ -76,15 +75,14 @@ class Sequence
   end
 
   #Only counts gaps in the original sequence.
-  def compare_match_perc(seq) #unused?
+  def compare_match_perc(seq)
     matches = 0
     minsize = [@nucleotides.size(), seq.nucleotides.size()].min()
     gaps = 0
     0.upto(minsize - 1) do |i|
       if(@nucleotides[i] == '-')
         gaps += 1
-      #elsif(@nucleotides[i] == seq.nucleotides[i])
-      elsif(match_nuc(@nucleotides[i], seq.nucleotides[i]))
+      elsif(@nucleotides[i] == seq.nucleotides[i])
         matches += 1
       end
     end

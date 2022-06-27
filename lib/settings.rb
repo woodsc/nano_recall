@@ -28,10 +28,8 @@ class Settings
     'alignment-optimize' => {type: 'Boolean', default: true,},
     'alignment-optimize-pad-size' => {type: 'Integer', default: 6,},
 
-    'reject-poor-aligned-ends' => {type: 'Boolean', default: true,},
-    'reject-poor-aligned-ends-window' => {type: 'Integer', default: 15,},
-    'reject-poor-aligned-ends-size-threshold' => {type: 'Float', default: 0.20,},
-    'reject-poor-aligned-ends-match-threshold' => {type: 'Float', default: 0.65,},
+    #Still kind of experimental.
+    'trim-bad-ends' => {type: 'Boolean', default: false,},
 
     'optimization-stop-poor-alignments' => {type: 'Boolean', default: true, },
     'optimization-stop-poor-alignments-threshold' => {type: 'Float', default: 0.10, },
@@ -55,7 +53,7 @@ class Settings
         #check if this is a valid setting.
         definition = @@definitions[tmp[0].downcase()]
         if(definition.nil?)
-          #raise "Invalid setting:  #{tmp[0]} - Unknown setting."
+          raise "Invalid setting:  #{tmp[0]} - Unknown setting."
         elsif(definition[:type] == "Integer" and Integer(tmp[1]).nil?)
           raise "Invalid setting:  #{tmp[0]} - Not an integer."
         elsif(definition[:type] == "Integer")
