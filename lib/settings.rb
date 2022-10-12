@@ -21,17 +21,18 @@ class Settings
     'trim-gene-edges' => {type: 'Boolean', default: true, },
     'trim-edges-dash-threshold' => {type: 'Float', default: 0.20, },
 
-    #We probably will remove the homopolymer code at some point.
     'homopolymer-fixes' => {type: 'Boolean', default: false, },
     'homopolymer-fixes-fill-gaps' => {type: 'Boolean', default: false, },
+    'reduce-dual-homopolymers' => {type: 'Boolean', default: false}, #experimental
 
     'alignment-optimize' => {type: 'Boolean', default: true,},
     'alignment-optimize-pad-size' => {type: 'Integer', default: 6,},
 
-    'reject-poor-aligned-ends' => {type: 'Boolean', default: true,},
+    'reject-poor-aligned-ends' => {type: 'Boolean', default: false,},
     'reject-poor-aligned-ends-window' => {type: 'Integer', default: 15,},
     'reject-poor-aligned-ends-size-threshold' => {type: 'Float', default: 0.20,},
     'reject-poor-aligned-ends-match-threshold' => {type: 'Float', default: 0.65,},
+
 
     'optimization-stop-poor-alignments' => {type: 'Boolean', default: true, },
     'optimization-stop-poor-alignments-threshold' => {type: 'Float', default: 0.10, },

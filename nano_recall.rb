@@ -309,57 +309,13 @@ begin
 
             #alignment post processing here----------------------?
 
-            #extract out to its own module?
-            if(Settings['reject-poor-aligned-ends'])
+            if(Settings['reject-poor-aligned-ends']) #experimental, disabled by default
               good = reject_poor_aligned_ends(alignment: final_alignment)
               next if(!good) #skip poor alignments
             end
 
-            #NEWish, shortens suspicious dual-homopolymers.
-            if(true)
-              #Attempts to shorten suspicious dual-homopolymers, EG  AAAAGGGG
-              homopolymers = []
-              st = -1
-              hnuc = ''
-
-              #First, find all the homopolymer
-              final_alignment.trim_start.upto(final_alignment.trim_end) do |i|
-                nuc = final_alignment.seq.nucleotides[i]
-                if(st == -1)
-                  st = i
-                  hnuc = nuc
-                elsif(hnuc != nuc) #end homopolyer
-                  if(i - st >= 3 and hnuc != '-')
-                    homopolymers << [st, (i - st), final_alignment.seq.nucleotides[st, (i - st)]]
-                  end
-                  st = i
-                  hnuc = nuc
-                end
-              end
-
-              #Find two in a row, where the standard sequence is altered one way or another.  EG:
-              #AAAGGGG
-              #AAAAGGG
-              #Would end up censoring as AAA-GGG
-              #Its a bit complex though, so be careful.
-              prev_hp = nil
-              homopolymers.each do |hp|
-                if(prev_hp == nil)
-                  prev_hp = hp
-                elsif(prev_hp[0] + prev_hp[1] == hp[0] and hp[01] + prev_hp[1] >= 7)
-                  if(final_alignment.std.nucleotides[hp[0]] == prev_hp[2][0] and hp[1] > 3)
-                    final_alignment.seq.nucleotides[hp[0]] = '-'
-                    #tmp_seq = final_alignment.seq.nucleotides[prev_hp[0]-3, prev_hp[1] + hp[1]+6]
-                    #puts "A:  Should be:  #{tmp_seq}" if(final_alignment.seq.id == '3b8785b1-5816-4bbb-8b45-9d4a89dd4f39')
-                  elsif(final_alignment.std.nucleotides[hp[0] - 1] == hp[2][0] and prev_hp[1] > 3)
-                    final_alignment.seq.nucleotides[hp[0] - 1] = '-'
-                    #tmp_seq = final_alignment.seq.nucleotides[prev_hp[0]-3, prev_hp[1] + hp[1]+6]
-                    #puts "B:  Should be:  #{tmp_seq}" if(final_alignment.seq.id == '3b8785b1-5816-4bbb-8b45-9d4a89dd4f39')
-                  end
-                end
-                prev_hp = hp
-              end
-
+            if(Settings['reduce-dual-homopolymers']) #experimental, disabled by default
+              reduce_dual_homopolymers(alignment: final_alignment )
             end
 
             if(Settings['optimization-coverage-limit'])

@@ -79,7 +79,10 @@ def alignment_optimize(gene: )
         clean_list = clean_freq.to_a
         common_sum = clean_list.sum(){|a| a[1]}
         clean_list.each do |val|
-          common_subseqs << val[0] if(val[1] > (common_sum * 0.10) and val[1] > 3) #increased the thresholds as we were getting issues at some spots.
+          common_subseqs << val[0] if(val[1] > (common_sum * 0.05))
+
+          #New and probably better:
+          #common_subseqs << val[0] if(val[1] > (common_sum * 0.10) and val[1] > 3) #increased the thresholds as we were getting issues at some spots.
         end
 
         culm_time_i += Time.now - ts

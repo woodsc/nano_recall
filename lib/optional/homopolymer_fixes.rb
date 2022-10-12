@@ -162,3 +162,56 @@ def homopolymer_fixes(gene: )
 
   end
 end
+
+
+
+#new
+
+#experimental: shortens suspicious dual-homopolymers.
+def reduce_dual_homopolymers(alignment: )
+  if(Settings['reduce-dual-homopolymers'])
+    #Attempts to shorten suspicious dual-homopolymers, EG  AAAAGGGG
+    homopolymers = []
+    st = -1
+    hnuc = ''
+
+    #First, find all the homopolymer
+    alignment.trim_start.upto(alignment.trim_end) do |i|
+      nuc = alignment.seq.nucleotides[i]
+      if(st == -1)
+        st = i
+        hnuc = nuc
+      elsif(hnuc != nuc) #end homopolyer
+        if(i - st >= 3 and hnuc != '-')
+          homopolymers << [st, (i - st), alignment.seq.nucleotides[st, (i - st)]]
+        end
+        st = i
+        hnuc = nuc
+      end
+    end
+
+    #Find two in a row, where the standard sequence is altered one way or another.  EG:
+    #AAAGGGG
+    #AAAAGGG
+    #Would end up censoring as AAA-GGG
+    #Its a bit complex though, so be careful.
+    prev_hp = nil
+    homopolymers.each do |hp|
+      if(prev_hp == nil)
+        prev_hp = hp
+      elsif(prev_hp[0] + prev_hp[1] == hp[0] and hp[01] + prev_hp[1] >= 7)
+        if(alignment.std.nucleotides[hp[0]] == prev_hp[2][0] and hp[1] > 3)
+          alignment.seq.nucleotides[hp[0]] = '-'
+          #tmp_seq = alignment.seq.nucleotides[prev_hp[0]-3, prev_hp[1] + hp[1]+6]
+          #puts "A:  Should be:  #{tmp_seq}" if(final_alignment.seq.id == '3b8785b1-5816-4bbb-8b45-9d4a89dd4f39')
+        elsif(alignment.std.nucleotides[hp[0] - 1] == hp[2][0] and prev_hp[1] > 3)
+          alignment.seq.nucleotides[hp[0] - 1] = '-'
+          #tmp_seq = alignment.seq.nucleotides[prev_hp[0]-3, prev_hp[1] + hp[1]+6]
+          #puts "B:  Should be:  #{tmp_seq}" if(final_alignment.seq.id == '3b8785b1-5816-4bbb-8b45-9d4a89dd4f39')
+        end
+      end
+      prev_hp = hp
+    end
+
+  end
+end

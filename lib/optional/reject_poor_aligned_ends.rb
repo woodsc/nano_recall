@@ -1,6 +1,8 @@
 require "#{File.dirname(__FILE__)}/../settings.rb"
 require "#{File.dirname(__FILE__)}/../sample.rb"
 
+
+#experimental, disabled by default
 def reject_poor_aligned_ends(alignment: )
   good = true
 

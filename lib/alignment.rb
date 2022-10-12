@@ -4,7 +4,7 @@ require "#{File.dirname(__FILE__)}/alignment/_alignment"
 require "#{File.dirname(__FILE__)}/settings.rb"
 
 class Alignment
-  attr_accessor :seq, :std, :insertions, :deletions, :trim_start, :trim_end, :rev_comp, :censors
+  attr_accessor :seq, :std, :insertions, :deletions, :trim_start, :trim_end, :rev_comp
   attr_accessor :cache_seq_clean #set to nil to reset cache
 
   def initialize()
@@ -16,7 +16,6 @@ class Alignment
     @trim_end = nil   #index of sequence end (last nucleotide)
     @cache_seq_clean = nil
     @rev_comp = false
-    @censors = []  #collection of ranges to censor  (based on raw alignment)
   end
 
   #aligns and stores the alignment
@@ -82,12 +81,6 @@ class Alignment
   def seq_clean(recalc=false)
     if(recalc or @cache_seq_clean.nil?)
       str = @seq.nucleotides + ''
-      #apply censors
-      @censors.each do |rng|
-        rng.each do |i|
-          str[i] = '-'
-        end
-      end
 
       str = str[0 .. @trim_end]
 
