@@ -76,8 +76,8 @@ else
   #end
   if(options[:batch_output] or options[:batch_input])
     #process everything in the batch_input folder.
-
-    files = Dir["#{options[:batch_input]}*.gz"] + Dir["#{options[:batch_input]}*.fastq"]
+    options[:batch_input].gsub!(/[\/\\]$/,'')
+    files = Dir["#{options[:batch_input]}/*.gz"] + Dir["#{options[:batch_input]}/*.fastq"]
     files.each do |file|
       out = "#{options[:batch_output]}/#{file.split('/').last.gsub('.gz','').gsub('.fastq','')}"
       batch_files << {input: file, output: out}
