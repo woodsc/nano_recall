@@ -151,6 +151,8 @@ begin
           sp[1] == subtype and sp[2] == gene and sp[3] == 'STD'
         }
 
+        next if(!hxb2)
+
         mixturized_seq = ''
         0.upto(hxb2.nucleotides.size() - 1) do |i|
           nucs = seqs.map(){|e| NUC_MIX[e.nucleotides[i]]}.flatten().uniq().sort()

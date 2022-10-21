@@ -108,7 +108,8 @@ class ResistanceReport
     pad = ((@pr_result ?  @pr_result.drugs : []) +
       (@rt_result ?  @rt_result.drugs : []) +
       (@int_result ?  @int_result.drugs : [])).
-      map(){|a| a.name.size()}.max() + 2
+      map(){|a| a.name.size()}.max()
+    pad = (pad.nil? ? 2 : pad + 2)
 
     if(@pr_result)
       text += "Protease Inhibitors:\n"
