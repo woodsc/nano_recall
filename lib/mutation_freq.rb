@@ -72,18 +72,23 @@ class MutationFreq
       nucs = []
       denominator = f_hsh.to_a.map(){|e| e[0] == '?' ? 0 : e[1] }.sum()
 
+      n_max = [-1,'?']
       f_hsh.to_a.each do |f|
-        next if(f[0] == '?' or f[0] == '-' or f[0] == 'N')
+        #next if(f[0] == '?' or f[0] == '-' or f[0] == 'N')
+        next if(f[0] == '?' or f[0] == 'N')
         perc = f[1].to_f / denominator.to_f
         if(perc > Settings['mix-threshold'])
-          nucs << f[0]
+          nucs << f[0] if(f[0] != '-')
+          n_max = [perc, f[0]] if(perc > n_max[0])
         end
       end
 
       #puts "a: " + nucs.sort.inspect
       #puts "b: " + NUC_MIX.invert.inspect
       #puts "c: " + NUC_MIX.invert[nucs.sort()]
-      if(nucs != [])
+      if(n_max[1] == '-')  #We can't represent mixes of dels, so we chose del if its the greatest perc.
+        nuc_consensus += '-'
+      elsif(nucs != [])
         nuc_consensus += NUC_MIX.invert[nucs.sort()]
       else
         nuc_consensus += '-'
@@ -106,9 +111,15 @@ class MutationFreq
     alignments.each do |alignment|
       seq_clean = alignment.seq_clean()[trim_range]
 
+      #we need to only include the start to the end of the sequence, trimming edges.
+      n_st = 0
+      n_end = seq_clean.size() - 1
+      n_st += 1 while(n_st < seq_clean.size() and seq_clean[n_st] == '-')
+      n_end -= 1 while(n_end >= 1 and seq_clean[n_end] == '-')
+
       if(full_amino_only)
         0.upto((seq_clean.size() / 3).to_i - 1) do |i|
-          if(!seq_clean[i*3, 3].include?('-'))
+          if(!seq_clean[i*3, 3].include?('-') or (i >= n_st && i <= n_end && seq_clean[i*3, 3] == '---'))
             freq[i*3 + 0][seq_clean[i*3 + 0]] += 1
             freq[i*3 + 1][seq_clean[i*3 + 1]] += 1
             freq[i*3 + 2][seq_clean[i*3 + 2]] += 1
@@ -116,11 +127,56 @@ class MutationFreq
         end
       else
         0.upto(seq_clean.size() - 1) do |i|
-          freq[i][seq_clean[i]] += 1
+          if(i >= n_st && i <= n_end) #prevents sequence edge dashes from being included
+            freq[i][seq_clean[i]] += 1
+          end
         end
       end
     end
     return freq
+  end
+
+  #returns an array like:  NUC_LOC,AA_LOC,CNT,PERC,SIZE,NUC,AA,VALID
+  def MutationFreq.get_ins_frequencies(alignments: )
+    list = []
+
+    alignments.each do |alignment|
+      alignment.insertions.each do |ins|
+        ins_loc = alignment.loc_ref(ins.begin)
+
+        ins_exists = list.find(){|a| a[0] == ins_loc and a[5] == alignment.seq.nucleotides[ins]}
+        if(ins_exists)
+          ins_exists[2] += 1
+        else
+          list.push([
+            ins_loc,
+            (ins_loc / 3),
+            1, #cnt
+            nil,
+            ins.size(),
+            alignment.seq.nucleotides[ins],
+            nuc_to_aa_string(alignment.seq.nucleotides[ins]),
+            (ins.size() % 3 == 0 and ins_loc % 3 == 0 )  #validity (size+framealign)
+          ])
+        end
+      end
+    end
+
+    #add the percent
+    list.each do |row|
+      row[3] = ((row[2].to_f / alignments.size().to_f) * 100).round(1)
+    end
+
+    #now we order by loc, count
+    list.sort!() do |a,b|
+      if(a[0] == b[0])
+        b[2] <=> a[2]
+      else
+        a[0] <=> b[0]
+      end
+    end
+
+    return list
   end
 
   def MutationFreq.get_aa_frequencies(alignments: , trim_range: )
@@ -202,7 +258,7 @@ class MutationFreq
   end
 
   def MutationFreq.save_aa(filename: , alignments: , hxb2_standard: , trim_range: )
-    aa_columns = ['A','C','D','E','F','G','H','I','K','L','M','N','P','Q','R','S','T','V','W','Y','*','-']
+    aa_columns = ['A','C','D','E','F','G','H','I','K','L','M','N','P','Q','R','S','T','V','W','Y','*','-','ins']
     freq = MutationFreq.get_aa_frequencies(alignments: alignments, trim_range: trim_range)
 
     File.open(filename, 'w') do |file|
@@ -229,6 +285,21 @@ class MutationFreq
         aa_columns.each_with_index do |aa_col, aa_dex|
           row[5 + aa_dex] = f_hsh[aa_col] ? f_hsh[aa_col] : 0
         end
+
+        ins_col = 5 + aa_columns.index('ins')
+        row[ins_col] = 0
+        alignments.each do |alignment|
+          alignment.insertions.each do |ins|
+            ins_loc = alignment.loc_ref(ins.begin)
+            if((ins_loc / 3) == loc + 1 and ins.size >= 3 and ins.size % 3 == 0)
+              row[ins_col] += 1
+              #puts "#{alignment.seq.id}"
+              #puts "#{ins_loc} #{ins_loc / 3} #{alignment.seq.nucleotides[ins]} -> #{nuc_to_aa_string(alignment.seq.nucleotides[ins])}"
+              break
+            end
+          end
+        end
+
 
         file.puts row.join(',')
       end

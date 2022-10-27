@@ -4,6 +4,7 @@ save
 deploy
 config/settings.txt
 lib/alignment/build/alignment_ext-0.0.0.gem
+lib/alignment/insert_detector.rb.old
 web/node_modules
 web/*.log
 web/*.lock

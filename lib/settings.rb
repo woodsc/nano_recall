@@ -33,6 +33,7 @@ class Settings
     'reject-poor-aligned-ends-size-threshold' => {type: 'Float', default: 0.20,},
     'reject-poor-aligned-ends-match-threshold' => {type: 'Float', default: 0.65,},
 
+    'sweep-inserts' => {type: 'Boolean', default: true, },
 
     'optimization-stop-poor-alignments' => {type: 'Boolean', default: true, },
     'optimization-stop-poor-alignments-threshold' => {type: 'Float', default: 0.10, },

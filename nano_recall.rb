@@ -19,6 +19,8 @@ require './lib/optional/homopolymer_fixes'
 require './lib/optional/alignment_optimize'
 require './lib/optional/optimization_coverage_limit'
 require './lib/optional/reject_poor_aligned_ends'
+require './lib/optional/sweep_inserts'
+
 
 options = {}
 OptionParser.new do |opts|
@@ -367,6 +369,15 @@ begin
           #puts "align-optimize took #{(Time.now - ts)} seconds"
         end
 
+
+        if(Settings['sweep-inserts']) #experimental, disabled by default
+          sample_gene.clades.each do |clade|
+            clade.alignments.each do |final_alignment|
+              sweep_inserts(alignment: final_alignment)
+            end
+          end
+        end
+
       end
 
 
@@ -497,6 +508,17 @@ begin
             alignments: gene_alignments_rev,
             hxb2_standard: gene.hxb2_standard,
             trim_range: gene.trim_range )
+        end
+
+        #insertion lists
+        File.open(filename_root + ".insertions.csv", 'w') do |file|
+          data = MutationFreq.get_ins_frequencies(alignments: gene_alignments)
+          file.puts "NUC_LOC,AA_LOC,CNT,PERC,SIZE,NUC,AA,VALID"
+          data.each do |dat|
+            if(dat[2].to_f / gene_alignments.size().to_f > 0.10) #10% threshold
+              file.puts dat.join(',')
+            end
+          end
         end
 
         #clean fastas

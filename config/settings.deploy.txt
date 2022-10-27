@@ -20,7 +20,7 @@ trim-edges-dash-threshold=0.20
 trim-gene-edges=false
 alignment-optimize=true
 alignment-optimize-pad-size=6
-
+sweep-inserts=true
 
 #optimizations
 optimization-stop-poor-alignments=true

@@ -32,6 +32,7 @@ def alignment_optimize(gene: )
 
     alignments.each_with_index do |alignment, a_i|
       indels = (alignment.insertions + alignment.deletions).sort(){|a,b| a.first <=> b.first}
+      #indels = (alignment.deletions).sort(){|a,b| a.first <=> b.first}
 
       #indels must be processed in reverse order, as each replacement could modify the indexes.
       indels.reverse().each do |indel|
