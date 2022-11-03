@@ -35,7 +35,7 @@ class Gene
     @clades = []
     @hxb2_standard = hxb2_standard
     @aa_coverage = []
-    0.upto((@hxb2_standard.nucleotides.size() / 3) - 1) do |i|
+    0.upto((@hxb2_standard.nucleotides.size() / 3).to_i() - 1) do |i|
       @aa_coverage[i] = 0
     end
     @trim_range = (0 .. @hxb2_standard.nucleotides.size() - 1)

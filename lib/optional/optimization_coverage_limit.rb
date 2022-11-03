@@ -17,7 +17,7 @@ def optimization_coverage_limit(gene: , alignment: )
     aa_seq.gsub!(/(\?+\-+)$/){|match| '-' * match.size()}
 
     0.upto(aa_seq.size() - 1) do |i|
-      gene.aa_coverage[i] += 1 if(aa_seq[i] != nil and aa_seq[i] != '?')
+      gene.aa_coverage[i] += 1 if(gene.aa_coverage[i] != nil and aa_seq[i] != nil and aa_seq[i] != '?')
     end
 
     if(gene.aa_coverage.all?(){|a| a >= Settings['optimization-coverage-limit-target'] } )
