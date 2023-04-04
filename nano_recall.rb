@@ -54,6 +54,10 @@ OptionParser.new do |opts|
     options[:batch_output] = v
     #check that it is valid output file?
   end
+  opts.on("--use-samplenames", "--use-samplename", "Use sample names for batch output") do |v|
+    #enable sample name output
+    options[:use_samplenames] = true
+  end
 #  opts.on("-p", "--project PROJECT", "Project to use") do |v|
 #    options[:project] = v
 #  end
@@ -183,6 +187,24 @@ begin
 
       #lets try playing around with a file.
       fastq = Fastq.new(batch[:input])
+
+      #assign samplenames for batch output.
+      if(options[:use_samplenames])
+        invalid_characters = /[ \/:*?"<>|\\]/  #gets rid of possible bad filename characters for windows and unix.
+        if(fastq.data.first())
+          samplename = fastq.data.first().annotations['sampleid'].gsub(invalid_characters, '')
+          barcode = fastq.data.first().annotations['barcode'].gsub(invalid_characters, '')
+          output = options[:batch_output] + '/' + samplename + '+' + barcode
+          if(batch_files.find(){|e| e[:output] == output })
+            puts "Output name #{output} already exists, output label will use filename instead."
+          else
+            batch[:output] = output
+          end
+        else
+          #use the filename previously assigned.
+        end
+      end
+
       job_add_num_sequences(job, fastq.data.size())
       puts "Loaded #{fastq.data.size()} sequences."
 
