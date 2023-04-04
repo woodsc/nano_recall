@@ -54,9 +54,9 @@ OptionParser.new do |opts|
     options[:batch_output] = v
     #check that it is valid output file?
   end
-  opts.on("--use-samplenames", "--use-samplename", "Use sample names for batch output") do |v|
+  opts.on("--use-sampleids", "--use-sampleids", "Use sample ids for batch output") do |v|
     #enable sample name output
-    options[:use_samplenames] = true
+    options[:use_sampleids] = true
   end
 #  opts.on("-p", "--project PROJECT", "Project to use") do |v|
 #    options[:project] = v
@@ -189,12 +189,12 @@ begin
       fastq = Fastq.new(batch[:input])
 
       #assign samplenames for batch output.
-      if(options[:use_samplenames])
+      if(options[:use_sampleids])
         invalid_characters = /[ \/:*?"<>|\\]/  #gets rid of possible bad filename characters for windows and unix.
         if(fastq.data.first())
-          samplename = fastq.data.first().annotations['sampleid'].gsub(invalid_characters, '')
+          sampleid = fastq.data.first().annotations['sampleid'].gsub(invalid_characters, '')
           barcode = fastq.data.first().annotations['barcode'].gsub(invalid_characters, '')
-          output = options[:batch_output] + '/' + samplename + '+' + barcode
+          output = options[:batch_output] + '/' + sampleid + '+' + barcode
           if(batch_files.find(){|e| e[:output] == output })
             puts "Output name #{output} already exists, output label will use filename instead."
           else

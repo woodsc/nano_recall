@@ -25,7 +25,7 @@ This will install the alignment algorithm.
             --batch-input FOLDER         Input folder
         -o, --output FILE                Output file
             --batch-output FOLDER        Output folder
-
+            --use-sampleids              Output format SAMPLEID+BARCODE.ext
 
 To process a single fastq (or fastq.gz)type :
 
@@ -33,7 +33,7 @@ To process a single fastq (or fastq.gz)type :
 
 To process a whole folder of fastq files:
 
-    ruby nano_recall.rb --batch-input INPUTFOLDER --batch-output SAVEFOLDER
+    ruby nano_recall.rb --batch-input INPUTFOLDER --batch-output SAVEFOLDER --use-sampleids
 
 
 So, for example, in Windows, if you installed the program into c:\nanorecall and your data lives in d:\data, and you want your data in a d:\output folder, you type
@@ -42,9 +42,9 @@ c:\nanorecall\ruby nano_recall.rb --batch-input d:/data/ --batch-output d:/outpu
 
 **NOTICE THAT THE "/" go the opposite way that you may expect for the data and output folders**
 
-
-
-
+The --use-sampleids option only works in combination with --batch-output, and
+will output as SAMPLEID+BARCODE.ext, UNLESS it finds a duplicate SAMPLEID+BARCODE
+in another file, in which case it will output as FILENAME.ext.
 
 
 Settings are in the config/settings.txt file.  The only settings currently
