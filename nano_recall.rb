@@ -174,6 +174,8 @@ begin
 
 
 
+  summary_cons_list = [] #for summarizing consensus sequences later.
+
   batch_files.each_with_index do |batch, batch_index|
     failure_state = false
     errors = []
@@ -587,6 +589,7 @@ begin
           file.puts nuc_consensus
         end
 
+        summary_cons_list << {gene: gene.name, nuc: nuc_consensus, label: batch[:output].gsub(/^.+\//,"").gsub(/^.+\\/,"")}
       end
 
       #Save resistance report
@@ -621,6 +624,28 @@ begin
 
 
   end #end processing files/folders
+
+  #Combine batch consensus sequences into a single file.
+  if(options[:batch_output] and summary_cons_list.size() > 0)
+    filename = "#{options[:batch_output]}/_summary_consensus.fas"
+
+    summary_genes = []
+    summary_cons_list.each do |e|
+      summary_genes << e[:gene]
+    end
+    summary_genes.uniq.sort()
+
+    summary_genes.each do |gene|
+      gene_cons = summary_cons_list.find_all() {|e| e[:gene] == gene}
+      File.open("#{options[:batch_output]}/_summary_consensus.#{gene}.fas", 'w') do |file|
+        gene_cons.each do |cons|
+          file.puts ">#{cons[:label]}\n#{cons[:nuc]}"
+        end
+      end
+    end
+
+  end
+
 
 rescue
   puts $!
