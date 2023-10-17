@@ -1,6 +1,6 @@
 #builds and represents an alignment.
 require "#{File.dirname(__FILE__)}/sequence.rb"
-require "#{File.dirname(__FILE__)}/alignment/_alignment"
+require 'alignment_ext'
 require "#{File.dirname(__FILE__)}/settings.rb"
 
 class Alignment

@@ -12,7 +12,9 @@ require './lib/alignment'
 require './lib/sample'
 require './lib/mutation_freq'
 require './lib/resistance_report'
-require './lib/alignment/_alignment' #might get rid of this and use it in alignment.rb
+#require './lib/alignment/_alignment' #might get rid of this and use it in alignment.rb
+require 'alignment_ext'
+
 
 require './lib/optional/gene_edges'
 require './lib/optional/homopolymer_fixes'
@@ -68,6 +70,9 @@ OptionParser.new do |opts|
     options[:jobfile] = v
     #check that it is valid output file?
   end
+  opts.on("-r", "--regions STRING", "Example:  --region 'pr:1-99 rt:1-440 int:1-288'") do |v|
+    options[:regions] = v
+  end
 end.parse!
 
 batch_files = []
@@ -106,8 +111,12 @@ if(stop)
 end
 
 
-
+#Load the settings
 Settings.load("./config/settings.txt")
+#apply any specific commandline options to the settings:
+Settings.settings['region-def'] = options[:regions] if(options[:regions])
+
+
 quit_early = false #if true, we stop processing early.
 if(Settings['debug'])
   pp options

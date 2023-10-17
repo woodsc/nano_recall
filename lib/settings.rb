@@ -42,7 +42,13 @@ class Settings
     'optimization-coverage-limit' => {type: 'Boolean', default: true, },
     'optimization-coverage-limit-target' => {type: 'Integer', default: 1000, },
     'optimization-mixturize-subtypes' => {type: 'Boolean', default: true, },
+
+    'region-def' => {type: 'String', default: "pr:1-99 rt:1-440 int:1-288", }, #new, TODO
   }
+
+  def Settings.settings()
+    return @@settings
+  end
 
   def Settings.[](key)
     return @@settings[key.downcase()]
