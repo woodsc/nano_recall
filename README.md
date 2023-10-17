@@ -14,7 +14,7 @@ you can find those at https://rubyinstaller.org/downloads/ .
 
 3) The first thing you need to do, (only once when you install the program, or again each time you update it
 is to run the command:
-    ruby windows_setup.rb
+    ruby setup.rb
 This will install the alignment algorithm.
 
 ## Usage of the program
