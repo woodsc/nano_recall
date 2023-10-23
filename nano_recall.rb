@@ -12,7 +12,9 @@ require './lib/alignment'
 require './lib/sample'
 require './lib/mutation_freq'
 require './lib/resistance_report'
-require './lib/alignment/_alignment' #might get rid of this and use it in alignment.rb
+#require './lib/alignment/_alignment' #might get rid of this and use it in alignment.rb
+require 'alignment_ext'
+
 
 require './lib/optional/gene_edges'
 require './lib/optional/homopolymer_fixes'
@@ -68,6 +70,9 @@ OptionParser.new do |opts|
     options[:jobfile] = v
     #check that it is valid output file?
   end
+  opts.on("-r", "--regions STRING", "Example:  --regions 'pr:1-99 rt:1-440 int:1-288'") do |v|
+    options[:regions] = v
+  end
 end.parse!
 
 batch_files = []
@@ -106,13 +111,26 @@ if(stop)
 end
 
 
-
+#Load the settings
 Settings.load("./config/settings.txt")
+
+#apply any specific commandline options to the settings:
+Settings.settings['region-def'] = options[:regions] if(options[:regions])
+
+#set up region-def
+region_def = {}
+Settings['region-def'].split(' ').each do |rdef|
+  match_data = rdef.match(/^([^:]+):(\d+)-(\d+)$/)
+  if(match_data)
+    #region_def[match_data[1]] = [(match_data[2].to_i - 1) * 3, (match_data[3].to_i - 1) * 3]
+    region_def[match_data[1]] = [(match_data[2].to_i - 1), (match_data[3].to_i - 1)]
+  end
+end
+
 quit_early = false #if true, we stop processing early.
 if(Settings['debug'])
   pp options
 end
-
 
 #Load projects.
 projects = nil
@@ -120,6 +138,11 @@ standards = load_fasta(filename: "config/reference_standards.fas", reference: tr
 
 gene_list = ['pr', 'rt', 'int']
 gene_list = Settings['debug-genes'].split(',')
+
+#remove any genes that have their regions listed as 0 to 0.
+gene_list.delete_if() do |gene_name|
+  region_def[gene_name] == [-1, -1]
+end
 
 #Create Folders if needed.
 if(options[:jobfile] =~ /^(.+)\/[^\/]+$/)
@@ -259,6 +282,8 @@ begin
             else
               alignment.align(std: ref_standard, seq: sequence)
             end
+
+            #get the match percentage
             match_perc = alignment.match_perc()
 
             if(match_perc < 0.10)
@@ -347,7 +372,7 @@ begin
             end
 
             if(Settings['optimization-coverage-limit'])
-              if(optimization_coverage_limit(gene: sample_gene, alignment: final_alignment))
+              if(optimization_coverage_limit(gene: sample_gene, alignment: final_alignment, region_def: region_def[sample_gene.name]))
                 quit_gene_early[sample_gene.name] = true
               end
             end
@@ -457,7 +482,8 @@ begin
       #What if we didn't bother with integrase or something?  Hrm.
 
       sample.genes.each do |sample_gene|
-        if(sample_gene.aa_coverage.min < Settings['optimization-coverage-limit-target'])
+        #if(sample_gene.aa_coverage.min < Settings['optimization-coverage-limit-target'])
+        if(!sample_gene.aa_coverage_okay())
           errors << "Did not reach the target coverage for the #{sample_gene.name} region."
           failure_state = true
         end
@@ -496,10 +522,9 @@ begin
     #Save job here instead?
     if(failure_state == false)
       #Output reports here
-
-      report = ResistanceReport.new(label: sample.id)
-      report_for = ResistanceReport.new(label: sample.id)
-      report_rev = ResistanceReport.new(label: sample.id)
+      report = ResistanceReport.new(label: sample.id, region_def: region_def)
+      report_for = ResistanceReport.new(label: sample.id, region_def: region_def)
+      report_rev = ResistanceReport.new(label: sample.id, region_def: region_def)
 
       sample.genes.each do |gene|
         filename_root = batch[:output] + "." + gene.name

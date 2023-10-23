@@ -14,7 +14,7 @@ you can find those at https://rubyinstaller.org/downloads/ .
 
 3) The first thing you need to do, (only once when you install the program, or again each time you update it
 is to run the command:
-    ruby windows_setup.rb
+    ruby setup.rb
 This will install the alignment algorithm.
 
 ## Usage of the program
@@ -26,6 +26,7 @@ This will install the alignment algorithm.
         -o, --output FILE                Output file
             --batch-output FOLDER        Output folder
             --use-sampleids              Output format SAMPLEID+BARCODE.ext
+        -r  --regions "pr:1-99 rt:1-440 int:1-288"  Define aa regions for analysis (optional)
 
 To process a single fastq (or fastq.gz)type :
 
@@ -46,6 +47,10 @@ The --use-sampleids option only works in combination with --batch-output, and
 will output as SAMPLEID+BARCODE.ext, UNLESS it finds a duplicate SAMPLEID+BARCODE
 in another file, in which case it will output as FILENAME.ext.
 
+If your sequencing doesn't reach the extent of each gene, you can narrow the
+amino acid region to analyze with --regions "pr:1-99 rt:1-440 int:1-288".  A
+gene can be removed entirely by setting the region to 0-0, such as "int:0-0".
+If modified regions are used, a note will be added to the resistance report.
 
 Settings are in the config/settings.txt file.  The only settings currently
 interesting are:

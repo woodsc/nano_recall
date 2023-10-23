@@ -7,7 +7,7 @@ Dir.mktmpdir do |temp_dir|
 
 
   deploy_i = 2
-  while(File.exists?(deploy_path))
+  while(File.exist?(deploy_path))
     deploy_path.gsub!(/(\.\d+)?\.zip/,".#{deploy_i}.zip")
     deploy_i += 1
   end

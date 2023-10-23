@@ -6,31 +6,51 @@ class ResistanceReport
   attr_accessor :pr_aa, :rt_aa, :int_aa
   attr_accessor :pr_aa_hxb2, :rt_aa_hxb2, :int_aa_hxb2
   attr_accessor :algorithm
+  attr_accessor :region_def
 
-  def initialize(label: '', algorithm: nil)
+  def initialize(label: '', algorithm: nil, region_def: {})
     @label = label
     @algorithm = algorithm.nil? ? AsiAlgorithm.new("config/HIVDB_9.0.xml") : algorithm
     @pr_result = nil
     @rt_result = nil
     @int_result = nil
+    @region_def = region_def
   end
 
 
   def add_aa(aa_seq: , gene: , aa_hxb2: )
     if(gene == 'pr')
       @pr_aa = trim_aa(aa_seq)
+      @pr_aa = cut_to_region(@pr_aa, 'pr')
       @pr_aa_hxb2 = aa_hxb2
       @pr_result = @algorithm.interpret(@pr_aa, 'PR')
     elsif(gene == 'rt')
       @rt_aa = trim_aa(aa_seq)
+      @rt_aa = cut_to_region(@rt_aa, 'rt')
       @rt_aa_hxb2 = aa_hxb2
       @rt_result = @algorithm.interpret(@rt_aa, 'RT')
     elsif(gene == 'int')
       @int_aa = trim_aa(aa_seq)
+      @int_aa = cut_to_region(@int_aa, 'int')
       @int_aa_hxb2 = aa_hxb2
       @int_result = @algorithm.interpret(@int_aa, 'IN')
     end
 
+  end
+
+  #replaces aa's outside region with empty.
+  def cut_to_region(aa_seq, gene)
+    trimmed = aa_seq.clone()
+
+    0.upto(trimmed.size() - 1) do |i|
+      if(i < @region_def[gene][0])
+        trimmed[i] = []
+      elsif(i > @region_def[gene][1])
+        trimmed[i] = []
+      end
+    end
+
+    return trimmed
   end
 
   #removes dashes from begining and end (replaces with empty)
@@ -176,6 +196,22 @@ class ResistanceReport
 
     mix_perc = (Settings['mix-threshold'] * 100).round(1)
     text += "\nMutations were included if they made up #{mix_perc}% of the sequences analyzed.\n"
+
+    if(@region_def)
+      text += "Interpretation is based on amino acid regions "
+      if(@region_def['pr'] and @region_def['pr'] != [-1, -1])
+        text += "#{@region_def['pr'][0] + 1} - #{@region_def['pr'][1] + 1} of the protease"
+      end
+      if(@region_def['rt'] and @region_def['rt'] != [-1, -1])
+        text += ', ' if(@region_def['pr'] and @region_def['pr'] != [-1, -1]) #place the comma
+        text += "#{@region_def['rt'][0] + 1} - #{@region_def['rt'][1] + 1} of the reverse transcriptase"
+      end
+      if(@region_def['int'] and @region_def['int'] != [-1, -1])
+        text += ', ' if((@region_def['pr'] and @region_def['pr'] != [-1, -1]) or (@region_def['rt'] and @region_def['rt'] != [-1, -1])) #place the comma
+        text += ", integrase aa #{@region_def['int'][0] + 1} - #{@region_def['int'][1] + 1} of the integrase"
+      end
+      text += ".\n"
+    end
 
     return text
   end
