@@ -61,6 +61,31 @@ class Gene
     return data
   end
 
+  #checks if coverage is sufficient for approval.
+  def aa_coverage_okay()
+    region_cov = self.region_aa_coverage()
+
+    if(region_cov.min() < Settings['optimization-coverage-limit-target'])
+      return false
+    else
+      return true
+    end
+  end
+
+  #returns the coverage list for only the specified regions of the gene.
+  def region_aa_coverage()
+    region_def = {}
+    Settings['region-def'].split(' ').each do |rdef|
+      match_data = rdef.match(/^([^:]+):(\d+)-(\d+)$/)
+      if(match_data)
+        region_def[match_data[1]] = [(match_data[2].to_i - 1), (match_data[3].to_i - 1)]
+      end
+    end
+
+    region_cov = @aa_coverage[region_def[@name][0] .. region_def[@name][1]]
+    return region_cov
+  end
+
 end
 
 class Clade

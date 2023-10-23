@@ -34,6 +34,16 @@ def job_add_num_sequences(job, num)
 end
 
 def job_update(dex, job, sample, force=false)
+  #add region definition here.
+  region_def = {}
+  Settings['region-def'].split(' ').each do |rdef|
+    match_data = rdef.match(/^([^:]+):(\d+)-(\d+)$/)
+    if(match_data)
+      region_def[match_data[1]] = [(match_data[2].to_i - 1), (match_data[3].to_i - 1)]
+    end
+  end
+
+  #main code
   update_interval = Settings['jobfile-update-interval']
   #if 15 seconds have gone by, update.
   if((job[:update_ts] + update_interval) < Time.now() or force)
@@ -61,7 +71,7 @@ def job_update(dex, job, sample, force=false)
     #puts "Total progress: #{min_perc}%"
 
     #in-progress report
-    report = ResistanceReport.new(label: sample.id)
+    report = ResistanceReport.new(label: sample.id, region_def: region_def)
     sample.genes.each do |gene|
       gene_alignments = []
       gene.clades.each {|clade| gene_alignments += clade.alignments}
@@ -198,7 +208,7 @@ def job_zip(job, path)
     FileUtils.rm("#{path}.zip")
   rescue
   end
-  
+
   if(job[:file])
     system("zip -j #{path}.zip #{path}\.*  #{job[:file]}")
   else

@@ -191,8 +191,6 @@ class Alignment
   exit()
 =end
 
-
-
   def match_perc()
     matches = 0
     minsize = [@std.nucleotides.size(), @seq.nucleotides.size()].min()
