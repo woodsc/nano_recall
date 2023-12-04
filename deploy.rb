@@ -25,8 +25,8 @@ Dir.mktmpdir do |temp_dir|
   FileUtils.cp("testdata/allruns_hac/NGS059/FAP35123_HAC_NGS059_d087a0fc.fastq\ \(13\).gz", "#{dir}/example.fastq.gz")
   FileUtils.cp("README.md", "#{dir}/README.md")
   FileUtils.cp("README.md", "#{dir}/README.txt")
-  FileUtils.cp("alignment_ext-0.0.0.gem", "#{dir}/alignment_ext-0.0.0.gem")
-  FileUtils.cp("windows_setup.rb", "#{dir}/windows_setup.rb")
+  FileUtils.cp("alignment_ext-1.0.0.gem", "#{dir}/alignment_ext-1.0.0.gem")
+  FileUtils.cp("setup.rb", "#{dir}/setup.rb")
 
   #zip up folder and transfer it to the deploy folder.
   FileUtils.cd(temp_dir) do
