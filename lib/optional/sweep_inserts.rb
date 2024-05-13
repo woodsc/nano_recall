@@ -73,6 +73,8 @@ def sweep_inserts(alignment: )
       end
     end
 
+    next if(options.empty?())
+    
     #choose frame aligned area with highest match score.
     options.each do |opt|
       tmp = Alignment.new
